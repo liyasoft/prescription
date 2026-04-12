@@ -1,6 +1,3 @@
-以下是根据你的《处方审查助手（Web版）需求说明书》撰写的 `README.md`，适用于 GitHub 项目首页展示。
-
-```markdown
 # 处方审查助手（Web版）
 
 基于 Next.js + Supabase + Tailwind CSS 构建的处方随机审查系统，帮助医疗机构高效完成处方质量抽查与追溯。
@@ -125,4 +122,3 @@ prescription-review-web/
 ## 📧 联系方式
 
 如有问题，请通过 [项目 Issues](https://github.com/liyasoft/prescription-review-web/issues) 反馈。
-```
