@@ -84,6 +84,16 @@ export async function finishSession(sessionId: string, status: SessionStatus): P
   if (error) throw error
 }
 
+export async function getSession(sessionId: string): Promise<ReviewSession> {
+  const { data, error } = await supabase
+    .from('review_sessions')
+    .select('*')
+    .eq('id', sessionId)
+    .single()
+  if (error) throw error
+  return data as ReviewSession
+}
+
 export async function getReviewedPrescriptionIds(sessionId: string): Promise<string[]> {
   const { data, error } = await supabase
     .from('review_records')

@@ -31,6 +31,26 @@ export async function queryPrescriptions(
   return (data || []) as PrescriptionWithItems[]
 }
 
+export async function queryPrescriptionIds(
+  startDate: string,
+  endDate: string,
+  department?: string | null
+): Promise<string[]> {
+  let query = supabase
+    .from('prescriptions')
+    .select('id')
+    .gte('prescribe_date', `${startDate}T00:00:00`)
+    .lte('prescribe_date', `${endDate}T23:59:59`)
+
+  if (department && department !== 'all') {
+    query = query.eq('department', department)
+  }
+
+  const { data, error } = await query
+  if (error) throw error
+  return (data || []).map((r: any) => r.id as string)
+}
+
 export async function getPrescriptionWithItems(id: string): Promise<PrescriptionWithItems | null> {
   const { data, error } = await supabase
     .from('prescriptions')

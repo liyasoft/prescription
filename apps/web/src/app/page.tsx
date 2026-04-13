@@ -29,7 +29,7 @@ import {
   TableCell,
   Badge,
 } from '@repo/ui'
-import { fetchDepartments, queryPrescriptions } from '@/services/prescription-service'
+import { fetchDepartments, queryPrescriptions, queryPrescriptionIds } from '@/services/prescription-service'
 import { getInProgressSession, finishSession } from '@/services/review-service'
 import { usePrescriptionStore } from '@/stores/prescription-store'
 import { useReviewStore } from '@/stores/review-store'
@@ -54,7 +54,15 @@ export default function HomePage() {
     setQueried,
   } = usePrescriptionStore()
 
-  const { reset: resetReview, setSessionId } = useReviewStore()
+  const {
+    reset: resetReview,
+    setSessionId,
+    setReviewerName,
+    setTargetCount,
+    setPassCount,
+    setFailCount,
+    setCandidateIds,
+  } = useReviewStore()
 
   const [departmentsLoading, setDepartmentsLoading] = useState(false)
   const [queryError, setQueryError] = useState<string | null>(null)
@@ -127,9 +135,34 @@ export default function HomePage() {
     if (!inProgressSession) return
     setSessionActionLoading(true)
     try {
+      // Restore store state from the saved session so /review doesn't redirect back
       setSessionId(inProgressSession.id)
+      setReviewerName(inProgressSession.reviewer_name)
+      setTargetCount(inProgressSession.target_count)
+      setPassCount(inProgressSession.pass_count)
+      setFailCount(inProgressSession.fail_count)
+
+      // Rebuild candidate IDs from the session's original filter params
+      if (inProgressSession.filter_start_date && inProgressSession.filter_end_date) {
+        const ids = await queryPrescriptionIds(
+          inProgressSession.filter_start_date,
+          inProgressSession.filter_end_date,
+          inProgressSession.filter_department
+        )
+        if (ids.length === 0) {
+          setQueryError('未找到该会话对应的处方数据，无法继续审查')
+          return
+        }
+        setCandidateIds(ids)
+      } else {
+        setQueryError('会话数据不完整，无法恢复')
+        return
+      }
+
       setSessionDialogOpen(false)
       router.push('/review')
+    } catch {
+      setQueryError('恢复会话失败，请重试')
     } finally {
       setSessionActionLoading(false)
     }

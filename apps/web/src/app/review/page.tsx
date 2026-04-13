@@ -28,7 +28,7 @@ import {
 import { usePrescriptionStore } from '@/stores/prescription-store'
 import { useReviewStore } from '@/stores/review-store'
 import { getPrescriptionWithItems } from '@/services/prescription-service'
-import { addReviewRecord, finishSession, getReviewedPrescriptionIds } from '@/services/review-service'
+import { addReviewRecord, finishSession, getReviewedPrescriptionIds, getSession } from '@/services/review-service'
 import { formatDate } from '@/lib/utils'
 import type { PrescriptionWithItems } from '@repo/shared'
 
@@ -120,10 +120,15 @@ export default function ReviewPage() {
         }
 
         // Load already-reviewed IDs from DB to support session recovery
-        const alreadyReviewed = await getReviewedPrescriptionIds(sessionId)
+        const [alreadyReviewed, session] = await Promise.all([
+          getReviewedPrescriptionIds(sessionId),
+          getSession(sessionId),
+        ])
         if (alreadyReviewed.length > 0) {
           setReviewedIds(alreadyReviewed)
           setCurrentIndex(alreadyReviewed.length)
+          setPassCount(session.pass_count)
+          setFailCount(session.fail_count)
         }
 
         const remaining = ids.filter((id) => !alreadyReviewed.includes(id))
